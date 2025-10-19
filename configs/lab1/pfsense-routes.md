@@ -1,8 +1,7 @@
 # pfSense Configuration for Lab 1: Inter-VLAN Routing
 
-# This configuration enables routing between Network A (VLAN 10) and Network B (VLAN 20)
-# Author: Network Infrastructure Labs
-# Date: 2025
+## This configuration enables routing between Network A (VLAN 10) and Network B (VLAN 20)
+
 
 ## Static Routes
 Destination: 10.20.20.0/24  
