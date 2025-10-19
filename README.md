@@ -1044,41 +1044,6 @@ sudo dhclient
 
 ---
 
-## Getting Help
-
-When asking for help, include:
-- Exact error messages
-- Relevant configuration snippets  
-- Output of diagnostic commands
-- What you've already tried
-- Network diagram of your setup
-```
-
----
-
-## Usage
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/network-infrastructure-labs.git
-cd network-infrastructure-labs
-
-# Lab 3 - Run automation scripts
-cd scripts
-chmod +x *.sh
-
-# Create VLANs
-sudo ./vlan-mass-create.sh
-
-# Configure DHCP
-sudo ./dhcp-mass-config.sh
-
-# Test connectivity
-./test-connectivity.sh
-```
-
----
-
 ## Why This Matters
 
 These aren't textbook examples - they're real problems I solved:
