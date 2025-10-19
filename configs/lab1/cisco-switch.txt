@@ -1,0 +1,43 @@
+! VLAN Configuration
+vlan 10
+ name NetworkA
+vlan 20
+ name NetworkB
+
+! Trunk to pfSense
+interface gigabitEthernet 0/1
+ description Trunk to pfSense
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+ switchport trunk native vlan 99
+ no shutdown
+
+! Enable IP routing on switch
+ip routing
+
+! Static route to Network A via pfSense
+ip route 10.10.10.0 255.255.255.0 10.20.20.254
+
+! VLAN interface for Network B
+interface vlan 20
+ ip address 10.20.20.10 255.255.255.0
+ no shutdown
+
+! Access ports for Network A
+interface range fastEthernet 0/1-10
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+
+! Access ports for Network B
+interface range fastEthernet 0/11-20
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+
+! Management
+line vty 0 4
+ login local
+ transport input ssh
+end
