@@ -20,106 +20,113 @@ netstat -rn | grep 10.20.20
 
 # Check firewall state table
 pfctl -ss | grep 10.20.20
+```
 
-Problem: DHCP not working on Network B
+#### Problem: DHCP not working on Network B
 
-Symptoms: Clients on Network B don't get IP addresses
+**Symptoms:** Clients on Network B don't get IP addresses
 
-Check:
+**Check:**
+- DHCP relay enabled on pfSense for Network B interface
+- Firewall rules allow UDP 67/68
+- Windows Server DHCP has scope for 10.20.20.0/24
+- Default gateway in DHCP scope points to correct pfSense interface
 
-    DHCP relay enabled on pfSense for Network B interface
-    Firewall rules allow UDP 67/68
-    Windows Server DHCP has scope for 10.20.20.0/24
-    Default gateway in DHCP scope points to correct pfSense interface
-
-Solution:
-
+**Solution:**
+```powershell
 # Windows Server - verify DHCP scope
 Get-DhcpServerv4Scope
+```
 
-# pfSense - check DHCP relay
-# Services > DHCP Relay > Enable
-# Destination servers: 10.10.10.4
+On pfSense:
+- Services > DHCP Relay > Enable
+- Destination servers: 10.10.10.4
 
-Problem: DNS resolution fails
+#### Problem: DNS resolution fails
 
-Symptoms: Can ping IPs but not hostnames
+**Symptoms:** Can ping IPs but not hostnames
 
-Check:
+**Check:**
+- DNS forwarding enabled on pfSense
+- Clients have correct DNS server (10.10.10.4)
+- Windows Server DNS service running
+- Firewall allows UDP/TCP 53
 
-    DNS forwarding enabled on pfSense
-    Clients have correct DNS server (10.10.10.4)
-    Windows Server DNS service running
-    Firewall allows UDP/TCP 53
-
-Solution:
-
+**Solution:**
+```bash
 # Test DNS from client
 nslookup google.com 10.10.10.4
 
 # Windows Server - check DNS service
 Get-Service DNS
+```
 
-Lab 2: Raspberry Pi VLAN Router
-Problem: Inter-VLAN routing not working
+### Lab 2: Raspberry Pi VLAN Router
 
-Symptoms: Devices in different VLANs cannot communicate
+#### Problem: Inter-VLAN routing not working
 
-Check:
+**Symptoms:** Devices in different VLANs cannot communicate
 
-    IP forwarding enabled on Pi: cat /proc/sys/net/ipv4/ip_forward (should be 1)
-    Trunk port configured correctly on switch
-    VLAN interfaces up on switch
-    Default gateways correct on clients
+**Check:**
+- IP forwarding enabled on Pi: cat /proc/sys/net/ipv4/ip_forward (should be 1)
+- Trunk port configured correctly on switch
+- VLAN interfaces up on switch
+- Default gateways correct on clients
 
-Solution:
-
+**Solution:**
+```bash
 # Raspberry Pi - enable IP forwarding
 echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
 sudo nano /etc/sysctl.conf
 # Add: net.ipv4.ip_forward=1
+```
 
+Cisco Switch checks:
+```text
 # Cisco Switch - verify trunk
 show interfaces fastEthernet 0/2 trunk
 show vlan brief
 
 # Check routing
 ip route
+```
 
-Problem: Raspberry Pi unreachable
+#### Problem: Raspberry Pi unreachable
 
-Symptoms: Cannot SSH to Pi or ping it
+**Symptoms:** Cannot SSH to Pi or ping it
 
-Check:
+**Check:**
+- Physical connection to trunk port (F0/2)
+- Static IP configured correctly (192.168.1.11)
+- Trunk port allows VLAN 10 (native or tagged)
+- Switch VLAN 10 interface has IP
 
-    Physical connection to trunk port (F0/2)
-    Static IP configured correctly (192.168.1.11)
-    Trunk port allows VLAN 10 (native or tagged)
-    Switch VLAN 10 interface has IP
-
-Solution:
-
+**Solution:**
+```bash
 # Raspberry Pi - check network config
 ip addr show eth0
 ip route
+```
 
+On the Cisco Switch:
+```text
 # Cisco Switch - verify interface
 show interface fastEthernet 0/2
 show running-config interface fastEthernet 0/2
+```
 
-Problem: DHCP pools exhausted
+#### Problem: DHCP pools exhausted
 
-Symptoms: Some clients get IP, others don't
+**Symptoms:** Some clients get IP, others don't
 
-Check:
+**Check:**
+- DHCP pool size vs. number of clients
+- Excluded address ranges
+- Lease time too long
+- Old leases not expiring
 
-    DHCP pool size vs. number of clients
-    Excluded address ranges
-    Lease time too long
-    Old leases not expiring
-
-Solution:
-
+**Solution:**
+```text
 ! Expand DHCP pool range
 ip dhcp pool pool10
  network 192.168.1.0 255.255.255.0
@@ -129,21 +136,22 @@ ip dhcp pool pool10
 
 ! Clear old bindings
 clear ip dhcp binding *
+```
 
-Lab 3: Mass VLAN Automation
-Problem: Script fails during execution
+### Lab 3: Mass VLAN Automation
 
-Symptoms: Script stops partway through, incomplete configuration
+#### Problem: Script fails during execution
 
-Check:
+**Symptoms:** Script stops partway through, incomplete configuration
 
-    SSH connectivity to switch
-    Expect package installed
-    Switch credentials correct
-    Timeout values sufficient for 200 VLANs
+**Check:**
+- SSH connectivity to switch
+- Expect package installed
+- Switch credentials correct
+- Timeout values sufficient for 200 VLANs
 
-Solution:
-
+**Solution:**
+```bash
 # Test SSH manually
 ssh admin@192.69.39.1
 
@@ -152,20 +160,20 @@ sudo apt-get install expect -y
 
 # Increase timeout in script
 set timeout 60  # in expect block
+```
 
-Problem: VLANs created but no connectivity
+#### Problem: VLANs created but no connectivity
 
-Symptoms: VLANs exist but devices can't communicate
+**Symptoms:** VLANs exist but devices can't communicate
 
-Check:
+**Check:**
+- VLAN interfaces are up: show ip interface brief | include up
+- IP routing enabled: show ip route
+- Trunk port allows all VLANs
+- No IP conflicts
 
-    VLAN interfaces are up: show ip interface brief | include up
-    IP routing enabled: show ip route
-    Trunk port allows all VLANs
-    No IP conflicts
-
-Solution:
-
+**Solution:**
+```text
 ! Verify VLAN interfaces
 show ip interface brief | include Vlan
 
@@ -175,20 +183,20 @@ interface vlan 10
 
 ! Verify routing
 show ip route connected
+```
 
-Problem: DHCP service won't start
+#### Problem: DHCP service won't start
 
-Symptoms: dnsmasq fails to start after mass config
+**Symptoms:** dnsmasq fails to start after mass config
 
-Check:
+**Check:**
+- Configuration syntax errors in dnsmasq.conf
+- Port 67 already in use
+- Network interfaces don't exist yet
+- Permissions on config file
 
-    Configuration syntax errors in dnsmasq.conf
-    Port 67 already in use
-    Network interfaces don't exist yet
-    Permissions on config file
-
-Solution:
-
+**Solution:**
+```bash
 # Check dnsmasq configuration
 sudo dnsmasq --test
 
@@ -201,20 +209,20 @@ sudo journalctl -u dnsmasq -n 50
 # Fix permissions
 sudo chmod 644 /etc/dnsmasq.d/vlan_dhcp.conf
 sudo systemctl restart dnsmasq
+```
 
-Problem: Ping tests show many failures
+#### Problem: Ping tests show many failures
 
-Symptoms: test-connectivity.sh reports 50%+ failure rate
+**Symptoms:** test-connectivity.sh reports 50%+ failure rate
 
-Check:
+**Check:**
+- Wait for VLANs to fully initialize
+- Routing convergence completed
+- Switch CPU not overloaded
+- Network congestion
 
-    Wait for VLANs to fully initialize
-    Routing convergence completed
-    Switch CPU not overloaded
-    Network congestion
-
-Solution:
-
+**Solution:**
+```bash
 # Run test with delay between pings
 for i in {2..201}; do
     ping -c 1 -W 2 10.0.x.x
@@ -226,10 +234,12 @@ show processes cpu sorted
 
 # Verify VLAN status
 show vlan brief | include active
+```
 
-General Troubleshooting Commands
-Cisco IOS
+## General Troubleshooting Commands
 
+### Cisco IOS
+```text
 ! Verify VLAN configuration
 show vlan brief
 show vlan id 10
@@ -253,9 +263,10 @@ show ip dhcp conflict
 debug ip packet
 debug ip icmp
 show logging
+```
 
-pfSense
-
+### pfSense
+```bash
 # Network connectivity
 ping -c 4 10.20.20.10
 
@@ -273,9 +284,10 @@ tcpdump -i em0 icmp
 
 # DHCP leases
 cat /var/dhcpd/var/db/dhcpd.leases
+```
 
-Raspberry Pi
-
+### Raspberry Pi
+```bash
 # Network interfaces
 ip addr show
 ip link show
@@ -292,9 +304,10 @@ sudo iptables -L -v -n
 
 # VLAN interfaces (if using)
 cat /proc/net/vlan/config
+```
 
-Linux Client Testing
-
+### Linux Client Testing
+```bash
 # Basic connectivity
 ping -c 4 192.168.1.1
 
@@ -313,26 +326,26 @@ ip route
 # DHCP renewal
 sudo dhclient -r
 sudo dhclient
+```
 
-Best Practices
+## Best Practices
 
-    Always backup configurations before making changes
-    Test in stages - verify each component works before moving to next
-    Use version control for configuration files
-    Document everything - especially non-obvious settings
-    Keep logs - they're invaluable when things break
-    Have a rollback plan - know how to undo changes quickly
+- Always backup configurations before making changes
+- Test in stages - verify each component works before moving to next
+- Use version control for configuration files
+- Document everything - especially non-obvious settings
+- Keep logs - they're invaluable when things break
+- Have a rollback plan - know how to undo changes quickly
 
-Getting Help
+## Getting Help
 
 When asking for help, include:
 
-    Exact error messages
-    Relevant configuration snippets
-    Output of diagnostic commands
-    What you've already tried
-    Network diagram of your setup
-
+- Exact error messages
+- Relevant configuration snippets
+- Output of diagnostic commands
+- What you've already tried
+- Network diagram of your setup
 
 ---
 
@@ -355,3 +368,4 @@ sudo ./dhcp-mass-config.sh
 
 # Test connectivity
 ./test-connectivity.sh
+```
