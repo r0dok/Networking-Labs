@@ -1,5 +1,3 @@
-configs/lab2/raspberry-pi-setup.md
-
 # Raspberry Pi VLAN Router Setup
 
 ## Hardware Requirements
@@ -15,9 +13,10 @@ configs/lab2/raspberry-pi-setup.md
 # Enable SSH during setup
 # Set static IP: 192.168.1.11/24
 # Gateway: 192.168.1.1
+```
 
-2. Enable IP Forwarding
-
+### 2. Enable IP Forwarding
+```bash
 # Edit sysctl.conf
 sudo nano /etc/sysctl.conf
 
@@ -26,9 +25,10 @@ net.ipv4.ip_forward=1
 
 # Apply changes
 sudo sysctl -p
+```
 
-3. Configure Network Interface
-
+### 3. Configure Network Interface
+```bash
 # Edit dhcpcd.conf
 sudo nano /etc/dhcpcd.conf
 
@@ -37,9 +37,10 @@ interface eth0
 static ip_address=192.168.1.11/24
 static routers=192.168.1.1
 static domain_name_servers=8.8.8.8 8.8.4.4
+```
 
-4. Install VLAN Support (if needed)
-
+### 4. Install VLAN Support (if needed)
+```bash
 sudo apt update
 sudo apt install vlan
 
@@ -48,9 +49,10 @@ sudo modprobe 8021q
 
 # Make it persistent
 echo "8021q" | sudo tee -a /etc/modules
+```
 
-5. Verify Routing
-
+### 5. Verify Routing
+```bash
 # Check IP forwarding
 cat /proc/sys/net/ipv4/ip_forward
 # Should output: 1
@@ -62,6 +64,7 @@ ip route
 ping -c 3 192.168.2.5
 ping -c 3 192.168.3.5
 ping -c 3 192.168.4.5
+```
 
 Network Diagram
 
@@ -218,4 +221,4 @@ echo ""
 echo "✓ Configuration applied successfully!"
 echo "✓ Created VLANs $VLAN_ID_START to $(($VLAN_ID_START + $VLAN_COUNT - 1))"
 echo "✓ IP range: 10.0.0.0 - 10.0.$((SUBNET_SIZE * VLAN_COUNT / 256)).$((SUBNET_SIZE * VLAN_COUNT % 256))"
-
+```
