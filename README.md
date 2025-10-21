@@ -1,48 +1,36 @@
 # Network Infrastructure Labs
 
-Real-world VLAN routing, automation, and multi-vendor integration. Production-tested configs from actual lab implementations.
-
----
+Production-tested configs from real lab implementations. VLAN routing, automation, multi-vendor setups.
 
 ## Lab 1: Inter-VLAN Routing with pfSense
 
-Two networks talking through a firewall.
-
 **Setup:**
-- Network A (VLAN 10): 10.10.10.0/24 with Windows Server DNS/DHCP
-- Network B (VLAN 20): 10.20.20.0/24 isolated network
-- pfSense routing + NAT between them
+- Network A (VLAN 10): 10.10.10.0/24 - Windows Server DNS/DHCP
+- Network B (VLAN 20): 10.20.20.0/24 - isolated
+- pfSense routes between them with NAT
 
-The tricky part: DHCP relay so Network B gets IPs from Windows Server in Network A.
-
-**Key config:**
+DHCP relay lets Network B get IPs from Windows Server in Network A.
 ```bash
 # pfSense static route
 10.20.20.0/24 via 193.191.150.57
 
-# Cisco trunk
+# Cisco trunk config
 interface gigabitEthernet 0/1
  switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 10,20
 ```
 
-**Lessons:** 
-- NAT is bidirectional - don't forget return traffic
-- DHCP relay needs UDP 67/68 firewall rules
-- Always set non-default native VLAN on trunks
+**Gotchas:**
+- NAT is bidirectional
+- DHCP relay needs UDP 67/68 rules
+- Set non-default native VLAN on trunks
 
 ---
 
 ## Lab 2: Raspberry Pi VLAN Router
 
-Can a €35 Pi route VLANs? Yes.
-
-**What I built:**
-- 4 VLANs (192.168.1-4.0/24)
-- Pi on trunk handling inter-VLAN routing
-- Cisco switch doing VLAN tagging + DHCP
-
+€35 Pi handling 4 VLANs (192.168.1-4.0/24). Cisco switch does tagging + DHCP, Pi routes between VLANs.
 ```bash
 interface vlan 10
  ip address 192.168.1.5 255.255.255.0
@@ -53,64 +41,53 @@ interface fastEthernet 0/2
  switchport trunk allowed vlan all
 ```
 
-Pi just needs IP forwarding enabled. Works great for learning. Not for production.
+Just needs IP forwarding enabled. Good for labs, not production.
 
 ---
 
 ## Lab 3: 200 VLAN Automation
 
-Instructor: "Configure 200 VLANs by next week"  
-Me: *writes bash scripts*
+Automated VLAN 2-201 creation with /28 subnets in 10.0.0.0/8.
 
-**Specs:**
-- VLANs 2-201
-- 10.0.0.0/8 with /28 subnets
-- Automated: VLAN creation, DHCP pools, testing
-
-**Three scripts:**
-1. `vlan-mass-create.sh` - generates + pushes Cisco config via SSH/Expect
-2. `dhcp-mass-config.sh` - creates dnsmasq pools for all VLANs
-3. `test-connectivity.sh` - pings every gateway
+**Scripts:**
+- `vlan-mass-create.sh` - generates + pushes config via SSH
+- `dhcp-mass-config.sh` - creates dnsmasq pools
+- `test-connectivity.sh` - pings all gateways
 
 200 VLANs configured in 5 minutes.
 
 ---
 
-## Repository Structure
-
+## Structure
 ```
 network-infrastructure-labs/
-├── README.md
-├── configs/
-│   ├── lab1/
-│   │   ├── pfsense-routes.txt
-│   │   ├── cisco-switch.txt
-│   │   └── windows-dhcp.txt
-│   ├── lab2/
-│   │   ├── cisco-vlan-config.txt
-│   │   └── raspberry-pi-setup.md
-│   └── lab3/
-│       └── generated-vlan-config.txt
-├── scripts/
-│   ├── vlan-mass-create.sh
-│   ├── dhcp-mass-config.sh
-│   └── test-connectivity.sh
-└── docs/
-    └── troubleshooting.md
+├── configs/           # Lab configurations
+│   ├── lab1/         # pfSense, Cisco, Windows
+│   ├── lab2/         # Pi + Cisco configs
+│   └── lab3/         # Generated configs
+├── scripts/          # Automation scripts
+└── docs/             # Troubleshooting guide
 ```
----
-
-## Best Practices
-
-1. **Always backup configurations** before making changes
-2. **Test in stages** - verify each component works before moving to next
-3. **Use version control** for configuration files
-4. **Document everything** - especially non-obvious settings
-5. **Keep logs** - they're invaluable when things break
-6. **Have a rollback plan** - know how to undo changes quickly
 
 ---
 
-## Why This Matters
+## Usage
+```bash
+git clone https://github.com/r0dok/Networking-Labs.git
+cd Networking-Labs/scripts
+chmod +x *.sh
 
-These aren't textbook examplesthey're real problems I solved
+# Lab 3 automation
+sudo ./vlan-mass-create.sh
+sudo ./dhcp-mass-config.sh
+./test-connectivity.sh
+```
+
+---
+
+## Notes
+
+- Backup configs before changes
+- Test incrementally
+- Document non-obvious settings
+- Keep rollback plans
