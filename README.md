@@ -2,6 +2,35 @@
 
 Production-tested configs from real lab implementations. VLAN routing, automation, multi-vendor setups.
 
+---
+
+## Structure
+```
+network-infrastructure-labs/
+├── configs/
+│   ├── lab1/
+│   │   ├── pfsense-routes.md          → pfSense routing config
+│   │   ├── cisco-switch.txt           → Cisco VLAN trunk setup
+│   │   └── windows-dhcp.md            → Windows Server DHCP scopes
+│   ├── lab2/
+│   │   ├── cisco-vlan-config.txt      → Cisco 4-VLAN setup
+│   │   └── raspberry-pi-setup.md      → Pi router configuration
+│   └── lab3/
+│       └── generated-vlan-config.txt  → Auto-generated 200 VLAN config
+├── scripts/
+│   ├── vlan-mass-create.sh            → Creates 200 VLANs via SSH
+│   ├── dhcp-mass-config.sh            → Generates dnsmasq pools
+│   └── test-connectivity.sh           → Tests all VLAN gateways
+└── docs/
+    └── troubleshooting.md             → Common issues + solutions
+```
+
+**Quick links:**
+- [Lab 1 configs](configs/lab1/) | [Lab 2 configs](configs/lab2/) | [Lab 3 configs](configs/lab3/)
+- [Automation scripts](scripts/) | [Troubleshooting](docs/troubleshooting.md)
+
+---
+
 ## Lab 1: Inter-VLAN Routing with pfSense
 
 **Setup:**
@@ -55,19 +84,6 @@ Automated VLAN 2-201 creation with /28 subnets in 10.0.0.0/8.
 - `test-connectivity.sh` - pings all gateways
 
 200 VLANs configured in 5 minutes.
-
----
-
-## Structure
-```
-network-infrastructure-labs/
-├── configs/           # Lab configurations
-│   ├── lab1/         # pfSense, Cisco, Windows
-│   ├── lab2/         # Pi + Cisco configs
-│   └── lab3/         # Generated configs
-├── scripts/          # Automation scripts
-└── docs/             # Troubleshooting guide
-```
 
 ---
 
